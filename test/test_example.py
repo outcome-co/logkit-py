@@ -1,4 +1,4 @@
-from outcome.logkit import hello_word
+from outcome.logkit.example import hello_word
 
 
 class TestExample:

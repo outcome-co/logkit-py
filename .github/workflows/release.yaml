@@ -49,5 +49,4 @@ jobs:
         - name: "Publish package"
           run: make publish
           env:
-            POETRY_USERNAME: ${{ secrets.OTC_PYPI_REGISTRY_USERNAME }}
-            POETRY_PASSWORD: ${{ secrets.OTC_PYPI_REGISTRY_TOKEN }}
+            POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_REGISTRY_TOKEN }}

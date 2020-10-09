@@ -1,7 +1,7 @@
 # logkit-py
 ![ci-badge](https://github.com/outcome-co/logkit-py/workflows/Checks/badge.svg?branch=v0.1.0) ![version-badge](https://img.shields.io/badge/version-0.1.0-brightgreen)
 
-Description TBD
+Logging helpers.
 
 ## Usage
 

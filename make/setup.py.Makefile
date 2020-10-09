@@ -1,44 +1,67 @@
 ifndef MK_SETUP
 MK_SETUP=1
 
+include make/env.Makefile
+
 # SETUP
 
-# The BUILD_SYSTEM_REQUIREMENTS variable is used *inside* a docker container 
-# during the build process when 'make install-build-system' is run, which would normally require
-# to have a docker in a docker. Since this is a bit complex for such a 
-# small build, it's easier to just pass the BUILD_SYSTEM_REQUIREMENTS to the docker build process
-# via a --build-arg and then pass the BUILD_SYSTEM_REQUIREMENTS as an environment variable
-# to the Makefile inside the build process.
-#
-# Here, we check if the BUILD_SYSTEM_REQUIREMENTS is already available, i.e. it's provided 
-# as an environment variable, if not we can assume we're not in the build process and
-# we have access to docker
+USES_PRIVATE_PYPI := $(shell $(READ_PYPROJECT_KEY) tool.poetry.source.name --check-only)
 
-ifndef BUILD_SYSTEM_REQUIREMENTS
-# If the BUILD_SYSTEM_REQUIREMENTS variable is not defined, fetch it using the docker
-BUILD_SYSTEM_REQUIREMENTS = $(shell docker run --rm -v $$(pwd):/work/ outcomeco/action-read-toml:latest --path /work/pyproject.toml --key build-system.requires)
+ifeq ($(USES_PRIVATE_PYPI),1)
+PRIVATE_PYPI_NAME = $(shell $(READ_PYPROJECT_KEY) tool.poetry.source.name)
+PRIVATE_PYPI_URL = $(shell $(READ_PYPROJECT_KEY) tool.poetry.source.url)
+
+# poetry expects the environment variables to match the name of
+# the repository, so we have to create dynamic env vars
+#
+# Example, your repository is called `otc`, poetry expects:
+# - PYPI_HTTP_BASIC_OTC_USERNAME
+# - PYPI_HTTP_BASIC_OTC_PASSWORD
+#
+
+# Currently this normalisation only transforms to uppercase
+# if you have a more complicated name, say with hyphens, etc.
+# you'll need to change this
+PRIVATE_PYPI_NORMALISED_NAME = $(shell echo $(PRIVATE_PYPI_NAME) | tr a-z A-Z)
+
+POETRY_USERNAME_ENV = POETRY_HTTP_BASIC_${PRIVATE_PYPI_NORMALISED_NAME}_USERNAME
+POETRY_PASSWORD_ENV = POETRY_HTTP_BASIC_${PRIVATE_PYPI_NORMALISED_NAME}_PASSWORD
+
+ifdef POETRY_USERNAME
+POETRY_ENV += $(POETRY_USERNAME_ENV)=$(POETRY_USERNAME) $(POETRY_PASSWORD_ENV)=$(POETRY_PASSWORD)
 endif
 
-.PHONY: install-build-system dev-setup production-setup ci-setup
+endif
+
+ifeq ($(PLATFORM),darwin)
+# For local usage on OSX
+POETRY_ENV += LDFLAGS="-L$$(brew --prefix openssl)/lib"
+endif
+
+
+.PHONY: install-build-system production-setup dev-setup ci-setup cache-friendly-pyproject
 
 install-build-system: ## Install poetry
-	# We pass the variable through echo/xargs to avoid whitespacing issues 
-	echo "$(BUILD_SYSTEM_REQUIREMENTS)" | xargs pip install
+	# We pass the variable through echo/xargs to avoid whitespacing issues
+	$(READ_PYPROJECT_KEY) build-system.requires | xargs pip install
+
+
+production-setup: install-build-system ## Install the dependencies for prod environments
+	poetry config virtualenvs.in-project true
+	@${POETRY_ENV} poetry install --no-interaction --no-ansi --no-dev
+
 
 ci-setup: install-build-system ## Install the dependencies for CI environments
-	poetry install --no-interaction --no-ansi
+	@${POETRY_ENV} poetry install --no-interaction --no-ansi
 
 
 dev-setup: install-build-system ## Install the dependencies for dev environments
+	@${POETRY_ENV} poetry install
 	./pre-commit.sh
-	LDFLAGS="-L$$(brew --prefix openssl)/lib" poetry install
 
-.PHONY: generate-production-requirements generate-dev-requirements
 
-generate-production-requirements: ## Generate a requirements.txt with production dependencies
-	poetry export -f requirements.txt -o requirements.txt --without-hashes
-
-generate-dev-requirements: ## Generate a requirements.txt with all dependencies
-	poetry export -f requirements.txt -o requirements.txt --without-hashes --dev
+cache-friendly-pyproject:
+	sed -e 's/^version[[:space:]]*=.*$$/version = "0.0.1-cache-friendly"/g' pyproject.toml > pyproject.cachefriendly.toml
+	mv pyproject.cachefriendly.toml pyproject.toml
 
 endif

@@ -11,9 +11,6 @@ env:
   # the actions/cache@v2 action to store downloaded dependencies between multiple runs
   POETRY_CACHE_DIR: .cache/poetry
   PIP_CACHE_DIR: .cache/pip
-  POETRY_USERNAME: "${{ secrets.OTC_PYPI_REGISTRY_USERNAME }}"
-  POETRY_PASSWORD: "${{ secrets.OTC_PYPI_REGISTRY_TOKEN }}"
-
 
 jobs:
   cache:
