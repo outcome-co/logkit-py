@@ -15,7 +15,7 @@ readme = "README.md"
 python = "^3.8"
 
 [tool.poetry.dev-dependencies]
-outcome-devkit = "^3.0.10"
+outcome-devkit = "^3.0.11"
 
 
 [tool.coverage.run]
