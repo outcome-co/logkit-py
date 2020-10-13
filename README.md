@@ -14,7 +14,7 @@ poetry add outcome-logkit
 `logkit` is a wrapper around [structlog](https://www.structlog.org/en/stable/) that configures it with the following:
 
 - Sets log level based on `APP_ENV` environment variable
-- Automatically outputs Stackdriver-compliant JSON to stdout when running in a GCP environement (AppEngine, CloudRun, GKE, etc.)
+- Automatically outputs Stackdriver-compliant JSON to stdout when running in a GCP environment (AppEngine, CloudRun, GKE, etc.)
 - Intercepts all messages sent to the standard library loggers and processes them transparently
 - Configures structlog to provide async-safe context values
 
