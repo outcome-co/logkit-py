@@ -49,8 +49,6 @@ class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
         if not self._restricted:
             return
 
-        handler_module = None
-
         # The only modifications we allow are for pytest loggers
         handler_module = inspect.getmodule(value)
 
