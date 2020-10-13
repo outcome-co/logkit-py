@@ -13,9 +13,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+structlog = "^20.1.0"
+outcome-utils = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
 outcome-devkit = "^3.0.13"
+freezegun = "^1.0.0"
 
 
 [tool.coverage.run]
@@ -57,6 +60,7 @@ exclude = '''
 
 [tool.isort]
 skip_glob = "*/.cache/**/*"
+line_length = 130
 
 [tool.commitizen]
 name = "cz_conventional_commits"

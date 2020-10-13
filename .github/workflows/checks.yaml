@@ -13,7 +13,6 @@ env:
   POETRY_CACHE_DIR: .cache/poetry
   PIP_CACHE_DIR: .cache/pip
 
-
 jobs:
 
     commit_lint:
@@ -35,7 +34,6 @@ jobs:
     checks_and_tests:
       name: Run checks and tests
       runs-on: ubuntu-latest
-      if: github.event.pull_request.draft == false
 
       steps:
         - name: Check out code
@@ -64,7 +62,7 @@ jobs:
             path: ${{ env.PIP_CACHE_DIR }}
             # Pip is only used to install poetry, and the poetry version 
             # is stored in pyproject.toml
-            key: pip-${{ hashFiles('**/poetry.lock') }}
+            key: pip-${{ hashFiles('**/pyproject.toml') }}
             restore-keys: |
               pip
 
@@ -100,7 +98,7 @@ jobs:
               github-token: ${{ secrets.OTTO_TOKEN }}
 
           - name: Auto-merge
-            uses: "pascalgn/automerge-action@v0.10.0"
+            uses: "pascalgn/automerge-action@v0.12.0"
             env:
               GITHUB_TOKEN: "${{ secrets.OTTO_TOKEN }}"
               MERGE_LABELS: ""

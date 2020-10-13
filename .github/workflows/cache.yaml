@@ -44,7 +44,7 @@ jobs:
           path: ${{ env.PIP_CACHE_DIR }}
           # Pip is only used to install poetry, and the poetry version 
           # is stored in pyproject.toml
-          key: pip-${{ hashFiles('**/poetry.lock') }}
+          key: pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             pip
 
