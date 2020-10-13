@@ -18,7 +18,7 @@ outcome-utils = "^4.8.0"
 frozenlist = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
-outcome-devkit = "^3.0.11"
+outcome-devkit = "^3.0.13"
 freezegun = "^1.0.0"
 
 
