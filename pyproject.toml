@@ -14,8 +14,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 structlog = "^20.1.0"
-outcome-utils = "^4.8.0"
-frozenlist = "^1.0.0"
+outcome-utils = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
 outcome-devkit = "^3.0.13"

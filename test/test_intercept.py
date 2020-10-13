@@ -205,3 +205,49 @@ def test_intercepted_logging():  # noqa: WPS218,WPS231
     finally:
         logging.setLoggerClass(logging.Logger)
         logging.root.handlers = root_handlers
+
+
+class TestHandlerList:
+    def test_interface(self):  # noqa: WPS218
+        hl = intercept.HandlerList([1])
+
+        assert len(hl) == 1
+        assert hl[0] == 1
+
+        hl.append(2)
+        hl[1] = 3
+
+        assert len(hl) == 2
+        assert hl[1] == 3
+
+        del hl[1]
+
+        assert len(hl) == 1
+        assert hl[0] == 1
+
+    def test_restricted(self):
+        import _pytest  # noqa: WPS433,WPS436
+
+        hl = intercept.HandlerList()
+        hl.restrict()
+
+        with pytest.raises(RuntimeError):
+            handler = intercept.BufferHandler()
+            hl.append(handler)
+
+        with pytest.raises(RuntimeError):
+            handler = intercept.BufferHandler()
+            hl[0] = handler
+
+        hl.append(_pytest.logging._LiveLoggingNullHandler())
+
+    def test_relax(self):
+        hl = intercept.HandlerList()
+        hl.restrict()
+
+        with pytest.raises(RuntimeError):
+            hl.append(1)
+
+        hl.relax()
+
+        hl.append(1)

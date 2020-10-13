@@ -1,13 +1,63 @@
 """This module contains the functionality to redirect the standard library logging system into our logging system."""
 
+import inspect
 import logging
+from collections.abc import MutableSequence
 from contextlib import contextmanager
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, Generic, List, Optional, Sequence, TypeVar
 
-import frozenlist
 import structlog
 from outcome.logkit.logger import get_logger
 from outcome.utils import env
+
+H = TypeVar('H', bound=logging.Handler)
+
+
+class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
+    __slots__ = ('_items', '_restricted')  # noqa: WPS607
+
+    def __init__(self, items: Optional[Sequence[H]] = None) -> None:
+        self._items = items or []
+        self._restricted = False
+
+    def restrict(self):
+        self._restricted = True
+
+    def relax(self):
+        self._restricted = False
+
+    def __len__(self) -> int:
+        return self._items.__len__()  # noqa: WPS609
+
+    def __getitem__(self, s: slice) -> Sequence[H]:
+        return self._items.__getitem__(s)  # noqa: WPS609
+
+    def insert(self, index: int, value: H) -> None:
+        self._modification_guard(value)
+        self._items.insert(index, value)
+
+    def __setitem__(self, s: slice, v: H) -> None:
+        self._modification_guard(v)
+        self._items.__setitem__(s, v)  # noqa: WPS609
+
+    def __delitem__(self, i: slice) -> None:  # noqa: WPS603
+        v = self._items[i]
+        self._modification_guard(v)
+        self._items.__delitem__(i)  # noqa: WPS609
+
+    def _modification_guard(self, value: H) -> None:
+        if not self._restricted:
+            return
+
+        handler_module = None
+
+        # The only modifications we allow are for pytest loggers
+        handler_module = inspect.getmodule(value)
+
+        if handler_module and 'pytest' in handler_module.__name__ and env.is_pytest():
+            return
+
+        raise RuntimeError('Cannot modify restricted list')
 
 
 # Extract some useful attributes to a dict
@@ -139,8 +189,8 @@ def setup_buffer_intercept(level) -> BufferHandler:
     buffer_handler = BufferHandler(level)
 
     # Use a frozenlist to make sure no-one tries to modify handlers
-    handlers = frozenlist.FrozenList([buffer_handler])
-    handlers.freeze()
+    handlers = HandlerList([buffer_handler])
+    handlers.restrict()
 
     replace_handlers(logging.root, handlers)
 
@@ -167,8 +217,8 @@ def setup_structlog_intercept(level) -> StructlogHandler:
     # we'll go a step further by replacing the list object
     # with a frozenlist that will throw an Exception if another
     # piece of code tries to modify it
-    handlers = frozenlist.FrozenList([structlog_handler])
-    handlers.freeze()
+    handlers = HandlerList([structlog_handler])
+    handlers.restrict()
 
     replace_handlers(logging.root, handlers)
 
