@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Get python version
-        uses: outcome-co/action-read-toml@v1.9.2
+        uses: outcome-co/action-read-toml@v1.9.3
         id: python_version
         with:
           path: pyproject.toml
