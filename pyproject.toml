@@ -12,7 +12,7 @@ documentation = "https://github.com/outcome-co/logkit-py#README"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "3.8"
 structlog = "^20.1.0"
 outcome-utils = "^4.9.0"
 
