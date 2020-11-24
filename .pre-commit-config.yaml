@@ -8,7 +8,7 @@ repos:
   
   # Stop commits to master
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0  # Use the ref you want to point at
+    rev: v3.3.0  # Use the ref you want to point at
     hooks:
     - id: no-commit-to-branch
       stages: [commit, push]
@@ -17,7 +17,7 @@ repos:
       stages: [commit, push]
   
   - repo: https://github.com/outcome-co/action-check-todos
-    rev: v1.7.3
+    rev: v1.7.4
     hooks:
     - id: check-todos
       args: ['--ignore','coverage','**/*']
@@ -26,13 +26,13 @@ repos:
   - repo: local
     hooks:
   
-    - id: autoupdate
-      name: autoupdate
-      language: system
-      stages: [push]
-      verbose: true
-      entry: pre-commit autoupdate
-      pass_filenames: false
+    # - id: autoupdate
+    #   name: autoupdate
+    #   language: system
+    #   stages: [push]
+    #   verbose: true
+    #   entry: pre-commit autoupdate
+    #   pass_filenames: false
   
     - id: checks
       name: checks
