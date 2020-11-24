@@ -60,12 +60,12 @@ class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
 
 # Extract some useful attributes to a dict
 def record_to_dict(record: logging.LogRecord) -> Dict[str, Any]:
-    d = dict(
+    d = {
         # These keys have specific meanings
-        levelno=record.levelno,
-        level=record.levelname,
-        logger=record.name,
-    )
+        'levelno': record.levelno,
+        'level': record.levelname,
+        'logger': record.name,
+    }
 
     # Bindings contains additional information added by the InterceptLogger
     bindings = getattr(record, 'bindings', {})
