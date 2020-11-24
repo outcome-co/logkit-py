@@ -1,4 +1,5 @@
 import logging
+import os
 import warnings
 from importlib import reload
 from unittest.mock import Mock, call, patch
@@ -24,6 +25,11 @@ def reload_structlog():
 @patch('outcome.logkit.init.env.is_prod', return_value=False)
 def test_get_level_not_prod(mocked_is_prod):
     assert init.get_level() == logging.DEBUG
+
+
+@patch.dict(os.environ, {'LOGKIT_LOG_LEVEL': '10'})
+def test_get_level_from_env():
+    assert init.get_level() == 10
 
 
 @patch('outcome.logkit.init.env.is_prod', return_value=True)

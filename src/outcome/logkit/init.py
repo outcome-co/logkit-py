@@ -1,6 +1,7 @@
 """Setup structured logging."""
 
 import logging
+import os
 from typing import Any, Callable, Dict, List, Optional
 
 import structlog
@@ -8,8 +9,15 @@ from outcome.logkit import intercept
 from outcome.logkit.stackdriver import StackdriverRenderer
 from outcome.utils import env
 
+_os_key = 'LOGKIT_LOG_LEVEL'
+
 
 def get_level() -> int:
+    log_level = os.environ.get(_os_key)
+
+    if log_level:
+        return int(log_level)
+
     if env.is_prod():
         return logging.INFO
     return logging.DEBUG
