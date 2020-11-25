@@ -208,8 +208,10 @@ def setup_structlog_intercept(level) -> StructlogHandler:
 
     # To make ipython bearable, we filter some log messages
     if env.is_ipython():  # pragma: no cover
+        parso_loggers = {'parso', 'parso.python.diff', 'parso.cache'}
         # `parso` prints a log of messages when ipython tries to autocomplete
-        logging.getLogger('parso').disabled = True
+        for logger in parso_loggers:
+            logging.getLogger(logger).disabled = True
 
     # Instead of adding the handler to the root's list of handlers
     # we'll go a step further by replacing the list object
