@@ -39,6 +39,7 @@ ignore = W503, # Allow line break before binary operator
          WPS604, # Allow usage of `pass` or `global var` inside classes
 
 per-file-ignores = test/**.py: WPS442, WPS226, WPS219, S101, D100, WPS211, WPS609, WPS118
+                   src/outcome/logkit/fixtures/**.py: WPS442
 # WPS442, # pytest fixtures require shadowing
 # WPS211, # Too many arguments
 # WPS226, # Allow several usage of string constants (> 3)
