@@ -30,13 +30,11 @@ def log_level():  # pragma: no cover
 
 
 @pytest.fixture
-def log_processors():  # pragma: no cover
-    return []
+def log_processors(log_output):  # pragma: no cover
+    return [log_output]
 
 
 @pytest.fixture
-def configure_structlog(log_output, log_level, log_processors):  # pragma: no cover
+def configure_structlog(log_level, log_processors):  # pragma: no cover
     processors = get_final_processors(log_level, log_processors)
-    # Insert log_output before ConsoleRenderer
-    processors.insert(-1, log_output)
     structlog.configure(processors=processors)
