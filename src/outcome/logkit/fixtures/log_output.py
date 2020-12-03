@@ -1,7 +1,7 @@
 """Log output fixtures.
 
-To capture log ouput during tests, you can use log_output fixture.
-If you need to add custom processors or define log_level, please use log_level and log_processors fixtures.
+To capture log output during tests, you can use `log_output` fixture.
+If you need to add custom processors or define `log_level`, please use `log_level` and `log_processors` fixtures.
 
 Example:
     @pytest.mark.usefixtures('configure_structlog')
