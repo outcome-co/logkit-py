@@ -1,5 +1,5 @@
 # logkit-py
-![ci-badge](https://github.com/outcome-co/logkit-py/workflows/Release/badge.svg?branch=v0.4.0) ![version-badge](https://img.shields.io/badge/version-0.4.0-brightgreen)
+![ci-badge](https://github.com/outcome-co/logkit-py/workflows/Release/badge.svg?branch=v1.0.0) ![version-badge](https://img.shields.io/badge/version-1.0.0-brightgreen)
 
 Logging helpers.
 
