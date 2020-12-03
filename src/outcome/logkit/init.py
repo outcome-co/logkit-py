@@ -126,6 +126,20 @@ def init(level: int = None, processors: Optional[List[Processor]] = None):  # pr
 
 def configure_structured_logging(level: int, processors: Optional[List[Processor]] = None):
 
+    final_processors = get_final_processors(level, processors)
+
+    # We can leave everything else as default
+    # Output will use StructLog's PrintLogger that just prints to stdout
+    # https://www.structlog.org/en/stable/api.html#structlog.PrintLogger
+
+    if env.is_prod():
+        structlog.configure_once(processors=final_processors)
+    else:
+        structlog.configure(processors=final_processors)
+
+
+def get_final_processors(level: int, processors: Optional[List[Processor]] = None):
+
     if not processors:
         processors = []
 
@@ -152,11 +166,4 @@ def configure_structured_logging(level: int, processors: Optional[List[Processor
         # The renderer needs to be the last processor
         final_processors.append(structlog.dev.ConsoleRenderer())
 
-    # We can leave everything else as default
-    # Output will use StructLog's PrintLogger that just prints to stdout
-    # https://www.structlog.org/en/stable/api.html#structlog.PrintLogger
-
-    if env.is_prod():
-        structlog.configure_once(processors=final_processors)
-    else:
-        structlog.configure(processors=final_processors)
+    return final_processors
