@@ -78,6 +78,39 @@ structured_logger.info('my_message')  # user_id=1 will be added to this log even
 context.remove('user_id')
 ```
 
+## Testing
+
+If you want to capture logs during your tests, you can use `configure_structlog` and `log_output` fixtures.
+
+```py
+@pytest.mark.usefixtures('configure_structlog')
+def test_log_output(log_ouput):
+    assert log_output.entries == []
+    # do something
+    assert log_output.entries == [...]
+```
+
+You can also define the captured `log level` or add `custom processors` thanks to these handy fixtures:
+
+```py
+@pytest.fixture
+def log_level():
+    return logging.DEBUG
+
+
+@pytest.fixture
+def log_processors(log_output):
+    my_custom_processor = foo
+    return [my_custom_processor, log_output]
+
+
+@pytest.mark.usefixtures('configure_structlog')
+def test_log_output(log_ouput):
+    assert log_output.entries == []
+    # do something
+    assert log_output.entries == [...]
+```
+
 ## Development
 
 Remember to run `./pre-commit.sh` when you clone the repository.
