@@ -13,7 +13,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.8"
-structlog = "20.1.0"
+structlog = "~20.1"
 outcome-utils = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
