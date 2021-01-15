@@ -119,9 +119,9 @@ class StructlogHandler(logging.Handler):
         self.struct_logger = struct_logger
 
     def emit(self, record: logging.LogRecord):
-        self.struct_logger.log(
-            record.getMessage().strip(), **record_to_dict(record),
-        )
+        # We need to retrieve the name of the method based on the level, and re-dispatch
+        # the event
+        getattr(self.struct_logger, record.levelname.lower())(record.getMessage().strip(), **record_to_dict(record))
 
 
 # This handler stores emitted records in a buffer
