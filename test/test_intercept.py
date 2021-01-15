@@ -133,7 +133,7 @@ def test_structlog_handler():
 
     logger.info(' hello  ', user_id=1)
 
-    logger.mock_struct_logger.log.assert_called_once_with(
+    logger.mock_struct_logger.info.assert_called_once_with(
         'hello', levelno=logging.INFO, level='INFO', logger='test_structlog_handler', user_id=1,
     )
 

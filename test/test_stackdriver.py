@@ -55,7 +55,7 @@ def test_level():
 
 def test_event():
     logger = structlog.get_logger()
-    logger.info(level='info')
+    logger.info('', level='info')
 
     assert len(mock_logger.mock_calls) == 1
 
@@ -68,7 +68,7 @@ def test_event():
 @freeze_time('2020-01-01')
 def test_time():
     logger = structlog.get_logger()
-    logger.info(timestamp=datetime.now().timestamp())
+    logger.info('', timestamp=datetime.now().timestamp())
 
     assert len(mock_logger.mock_calls) == 1
 
@@ -80,7 +80,7 @@ def test_time():
 
 def test_invalid_time():
     logger = structlog.get_logger()
-    logger.info(timestamp='2020/10/12')
+    logger.info('', timestamp='2020/10/12')
 
     assert len(mock_logger.mock_calls) == 1
 
