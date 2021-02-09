@@ -152,16 +152,16 @@ def get_final_processors(level: int, processors: Optional[List[Processor]] = Non
         structlog.processors.StackInfoRenderer(),
         structlog.dev.set_exc_info,
         structlog.processors.format_exc_info,
+        structlog.processors.ExceptionPrettyPrinter(),
     ]
 
     # How is the output formatted
-    if env.is_prod() or env.is_google_cloud():
+    if env.is_google_cloud():
         final_processors.append(structlog.processors.TimeStamper())
         # The renderer needs to be the last processor
         final_processors.append(StackdriverRenderer())
     else:
         final_processors.append(structlog.processors.TimeStamper(fmt='iso'))
-        final_processors.append(structlog.processors.ExceptionPrettyPrinter())
         final_processors.append(structlog.stdlib.PositionalArgumentsFormatter())
         # The renderer needs to be the last processor
         final_processors.append(structlog.dev.ConsoleRenderer())
