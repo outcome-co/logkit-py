@@ -50,8 +50,7 @@ def test_logger_no_name_processor():
     assert out == event_dict
 
 
-@patch('outcome.logkit.init.env.is_prod', return_value=False)
-def test_configure_structured_logging_dev(*args):
+def test_configure_structured_logging(*args):
     init.configure_structured_logging(logging.INFO)
 
     renderer = structlog.get_config()['processors'][-1]
@@ -63,17 +62,12 @@ def test_configure_structured_logging_dev(*args):
 def test_configure_structured_logging_prod(*args):
     init.configure_structured_logging(logging.INFO)
 
-    renderer = structlog.get_config()['processors'][-1]
-
-    assert isinstance(renderer, stackdriver.StackdriverRenderer)
-
     with warnings.catch_warnings(record=True) as w:
         init.configure_structured_logging(logging.INFO)
         assert len(w) == 1
         assert issubclass(w[0].category, RuntimeWarning)
 
 
-@patch('outcome.logkit.init.env.is_prod', return_value=False)
 @patch('outcome.logkit.init.env.is_google_cloud', return_value=True)
 def test_configure_structured_logging_gcp(*args):
     init.configure_structured_logging(logging.INFO)
@@ -83,7 +77,6 @@ def test_configure_structured_logging_gcp(*args):
     assert isinstance(renderer, stackdriver.StackdriverRenderer)
 
 
-@patch('outcome.logkit.init.env.is_prod', return_value=False)
 def test_configure_structured_logging_custom_processors(*args):
     def custom_processor():
         ...
