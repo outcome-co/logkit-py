@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "outcome-logkit"
-version = "1.0.1"
+version = "1.0.2"
 description = "Logging helpers."
 authors = ["Outcome Engineering <engineering@outcome.co>"]
 packages = [
@@ -64,7 +64,7 @@ line_length = 130
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.0.1"
+version = "1.0.2"
 tag_format = "v$version"
 bump_message = "chore(version): $current_version → $new_version"
 version_files = ["README.md:version-badge", "pyproject.toml:version"]
