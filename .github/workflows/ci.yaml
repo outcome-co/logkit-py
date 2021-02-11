@@ -18,8 +18,7 @@ env:
   PIP_CACHE_DIR: ${{ github.workspace }}/.cache/pip
   # Default DB values
   GITHUB_TOKEN: ${{ secrets.OTTO_TOKEN }}
-  POETRY_USERNAME: "${{ secrets.OTC_PYPI_REGISTRY_USERNAME }}"
-  POETRY_PASSWORD: "${{ secrets.OTC_PYPI_REGISTRY_TOKEN }}"
+  POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_REGISTRY_TOKEN }}
 
 jobs:
     commit_lint:
