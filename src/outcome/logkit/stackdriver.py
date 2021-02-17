@@ -1,17 +1,19 @@
 """Outputs Stackdriver-compliant JSON."""
 
 from datetime import datetime
-from typing import Dict
+from typing import cast
+
+from outcome.logkit.types import EventDict
 
 import structlog
 
 
 class StackdriverRenderer(structlog.processors.JSONRenderer):
-    def __call__(self, logger, name, event_dict):
+    def __call__(self, logger: object, name: str, event_dict: EventDict):
         return super().__call__(logger, name, self.format_for_stackdriver(event_dict))
 
     @classmethod
-    def format_for_stackdriver(cls, event_dict: Dict):
+    def format_for_stackdriver(cls, event_dict: EventDict):
         level = event_dict.pop('level', None)
         if level:
             event_dict['severity'] = level
@@ -25,7 +27,7 @@ class StackdriverRenderer(structlog.processors.JSONRenderer):
         timestamp = event_dict.pop('timestamp', None)
         if timestamp:
             try:
-                ts = datetime.fromtimestamp(timestamp).isoformat('T')
+                ts = datetime.fromtimestamp(cast(float, timestamp)).isoformat('T')
                 timestamp_str = f'{ts}Z'
             except Exception:
                 timestamp_str = timestamp

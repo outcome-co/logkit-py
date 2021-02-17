@@ -18,6 +18,8 @@ import structlog
 from outcome.logkit.init import get_final_processors
 from structlog.testing import LogCapture
 
+from typing import Sequence
+
 
 @pytest.fixture
 def log_output():  # pragma: no cover
@@ -30,11 +32,11 @@ def log_level():  # pragma: no cover
 
 
 @pytest.fixture
-def log_processors(log_output):  # pragma: no cover
+def log_processors(log_output: LogCapture):  # pragma: no cover
     return [log_output]
 
 
 @pytest.fixture
-def configure_structlog(log_level, log_processors):  # pragma: no cover
-    processors = get_final_processors(log_level, log_processors)
+def configure_structlog(log_level: int, log_processors: Sequence[LogCapture]):  # pragma: no cover
+    processors = get_final_processors(log_level, log_processors)  # type: ignore
     structlog.configure(processors=processors)

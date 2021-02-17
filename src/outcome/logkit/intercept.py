@@ -2,9 +2,9 @@
 
 import inspect
 import logging
-from collections.abc import MutableSequence
+from collections.abc import Sequence
 from contextlib import contextmanager
-from typing import Any, Dict, Generic, List, Optional, Sequence, TypeVar
+from typing import Dict, Generic, List, Optional, Sequence, TypeVar, Protocol, cast, Union, MutableSequence, TYPE_CHECKING
 
 import structlog
 from outcome.logkit.logger import get_logger
@@ -12,11 +12,21 @@ from outcome.utils import env
 
 H = TypeVar('H', bound=logging.Handler)
 
+if TYPE_CHECKING:  # pragma: no cover
+    ArgsType = logging._ArgsType  # type: ignore
+    ExcInfoType = logging._ExcInfoType  # type: ignore
+else:
+    ArgsType = object
+    ExcInfoType = object
 
-class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
+class SupportsIndex(Protocol):  # pragma: no cover
+    def __index__(self) -> int: ...
+
+
+class HandlerList(MutableSequence[H], Generic[H]):  # noqa: WPS214
     __slots__ = ('_items', '_restricted')  # noqa: WPS607
 
-    def __init__(self, items: Optional[Sequence[H]] = None) -> None:
+    def __init__(self, items: Optional[List[H]] = None) -> None:
         self._items = items or []
         self._restricted = False
 
@@ -36,11 +46,11 @@ class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
         self._modification_guard(value)
         self._items.insert(index, value)
 
-    def __setitem__(self, s: slice, v: H) -> None:
+    def __setitem__(self, s: SupportsIndex, v: H) -> None:
         self._modification_guard(v)
         self._items.__setitem__(s, v)  # noqa: WPS609
 
-    def __delitem__(self, i: slice) -> None:  # noqa: WPS603
+    def __delitem__(self, i: int) -> None:  # noqa: WPS603
         v = self._items[i]
         self._modification_guard(v)
         self._items.__delitem__(i)  # noqa: WPS609
@@ -59,8 +69,8 @@ class HandlerList(MutableSequence, Generic[H]):  # noqa: WPS214
 
 
 # Extract some useful attributes to a dict
-def record_to_dict(record: logging.LogRecord) -> Dict[str, Any]:
-    d = {
+def record_to_dict(record: logging.LogRecord) -> Dict[str, object]:
+    d: Dict[str, object] = {
         # These keys have specific meanings
         'levelno': record.levelno,
         'level': record.levelname,
@@ -84,8 +94,8 @@ class InterceptLogger(logging.Logger):
     def propagate(self):
         return True
 
-    @propagate.setter
-    def propagate(self, v):
+    @propagate.setter  # type: ignore
+    def propagate(self, v: bool):
         # No-op
         ...
 
@@ -93,12 +103,12 @@ class InterceptLogger(logging.Logger):
     def handlers(self):
         return []
 
-    @handlers.setter
-    def handlers(self, v):
+    @handlers.setter  # type: ignore
+    def handlers(self, v: List[object]):
         # No-op
         ...
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1, **kwargs):  # noqa: WPS211
+    def _log(self, level: int, msg: str, args: ArgsType, exc_info: ExcInfoType = None, extra: Optional[Dict[str, object] ]= None, stack_info: bool = False, stacklevel: int = 1, **kwargs: object):  # noqa: WPS211
         # The built-in logger library actually has support for arbitrary fields, they're just
         # passed around the the `extra` parameter. We'll mark them so they're easy to find later
 
@@ -114,7 +124,7 @@ class InterceptLogger(logging.Logger):
 # This is the bridge between the two logging systems - messages are
 # handled by being forwarded to the struct logger
 class StructlogHandler(logging.Handler):
-    def __init__(self, struct_logger: structlog.BoundLogger, level=logging.NOTSET):
+    def __init__(self, struct_logger: structlog.BoundLogger, level: int = logging.NOTSET):
         super().__init__(level)
         self.struct_logger = struct_logger
 
@@ -127,7 +137,7 @@ class StructlogHandler(logging.Handler):
 # This handler stores emitted records in a buffer
 # so they can be processed later
 class BufferHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
+    def __init__(self, level: int = logging.NOTSET):
         super().__init__(level)
         self.buffer: List[logging.LogRecord] = []
 
@@ -135,7 +145,7 @@ class BufferHandler(logging.Handler):
         self.buffer.append(record)
 
 
-def reset_standard_library_logging(level):
+def reset_standard_library_logging(level: int):
     # Send warnings to the standard library log system
     logging.captureWarnings(True)
 
@@ -150,12 +160,17 @@ def reset_standard_library_logging(level):
     intercept_existing_loggers()
 
 
+# There's no stub for manager
+class Manager(Protocol):
+    loggerDict: Dict[str, Union[logging.Logger, logging.PlaceHolder]]
+    
+
 def intercept_existing_loggers():
     # All existing loggers (at least those retrieved via `getLogger`)
     # are in the loggerDict dict on the manager object
+    manager = cast(Manager, logging.Logger.manager)  # type: ignore
 
-    logger: logging.Logger
-    for logger in logging.Logger.manager.loggerDict.values():
+    for logger in manager.loggerDict.values():
 
         # The log manager inserts placeholders into the hierarchy
         # there's no processing to do
@@ -170,7 +185,7 @@ def intercept_existing_loggers():
 
 
 @contextmanager
-def intercepted_logging(level):
+def intercepted_logging(level: int):
     reset_standard_library_logging(level)
     buffer = setup_buffer_intercept(level)
 
@@ -180,7 +195,7 @@ def intercepted_logging(level):
     handle_records(buffer.buffer, structlog_handler)
 
 
-def setup_buffer_intercept(level) -> BufferHandler:
+def setup_buffer_intercept(level: int) -> BufferHandler:
     # Create a buffer to store all of the log records
     # that may occur during the setup so we can process
     # them after the config is complete
@@ -195,7 +210,7 @@ def setup_buffer_intercept(level) -> BufferHandler:
     return buffer_handler
 
 
-def setup_structlog_intercept(level) -> StructlogHandler:
+def setup_structlog_intercept(level: int) -> StructlogHandler:
     # Now reconfigure root to use structlog
     # We want to intercept everything that's sent to the standard
     # library's logging module, and redirect it to our log system.
@@ -231,7 +246,7 @@ def replace_handlers(logger: logging.Logger, handlers: Sequence[logging.Handler]
         handler.flush()
         handler.close()
 
-    logger.handlers = handlers
+    logger.handlers = list(handlers)
 
 
 def handle_records(records: List[logging.LogRecord], handler: logging.Handler):
