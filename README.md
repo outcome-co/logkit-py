@@ -1,5 +1,5 @@
 # logkit-py
-![Continuous Integration](https://github.com/outcome-co/logkit-py/workflows/Continuous%20Integration/badge.svg) ![version-badge](https://img.shields.io/badge/version-1.0.2-brightgreen)
+![Continuous Integration](https://github.com/outcome-co/logkit-py/workflows/Continuous%20Integration/badge.svg) ![version-badge](https://img.shields.io/badge/version-1.1.0-brightgreen)
 
 Logging helpers.
 
