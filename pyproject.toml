@@ -12,12 +12,12 @@ documentation = "https://github.com/outcome-co/logkit-py#README"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.8"
+python = "^3.8.6"
 structlog = "^20.1.0"
-outcome-utils = "^4.9.0"
+outcome-utils = "^5.0.0"
 
 [tool.poetry.dev-dependencies]
-outcome-devkit = "^3.2.1"
+outcome-devkit = "^5.6.1"
 freezegun = "^1.0.0"
 
 
@@ -28,7 +28,6 @@ source = ['src/outcome/logkit']
 omit = [
    "test/*"
 ]
-parallel = true
 
 [tool.coverage.report]
 fail_under = 100
@@ -70,5 +69,5 @@ bump_message = "chore(version): $current_version → $new_version"
 version_files = ["README.md:version-badge", "pyproject.toml:version"]
 
 [build-system]
-requires = ["poetry==1.0.10"]
+requires = ["poetry==1.1.4"]
 build-backend = "poetry.masonry.api"

@@ -2,11 +2,12 @@
 
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional
+from typing import List, Optional, Sequence, cast
 
 import structlog
 from outcome.logkit import intercept
 from outcome.logkit.stackdriver import StackdriverRenderer
+from outcome.logkit.types import EventDict, Processor
 from outcome.utils import env
 
 _os_key = 'LOGKIT_LOG_LEVEL'
@@ -59,10 +60,6 @@ level_aliases = {
 }
 
 
-EventDict = Dict[str, Any]
-Processor = Callable[[Any, str, EventDict], EventDict]
-
-
 class LogLevelProcessor:
     """This processor class ensures that each log message has a standardized log level.
 
@@ -74,12 +71,14 @@ class LogLevelProcessor:
         self.level = level
 
     # At the end, we want an event dict that has a valid label, and no level number.
-    def __call__(self, logger, method_name: str, event_dict: EventDict) -> EventDict:
+    def __call__(self, logger: object, method_name: str, event_dict: EventDict) -> EventDict:
         event_dict = self.normalize_level(method_name, event_dict)
         return self.filter_on_level(event_dict)
 
     def filter_on_level(self, event_dict: EventDict) -> EventDict:
-        if event_dict.pop('levelno') < self.level:
+        levelno = event_dict.pop('levelno')
+        assert isinstance(levelno, int)
+        if levelno < self.level:
             raise structlog.DropEvent
         return event_dict
 
@@ -94,21 +93,23 @@ class LogLevelProcessor:
 
         # level_number has priority over the provided level name
         elif event_level_number in levels:
-            level = levels.get(event_level_number)
+            # if levels is a dict with int keys, and event_level_number is a valid key, then it's an int...
+            level = levels.get(cast(int, event_level_number))
 
         # Try using the provided level name
         else:
+            assert isinstance(event_level_name, str)
             level = event_level_name.lower()
 
         # Find its canonical name, or revert to default
-        normalized_level_name = level_aliases.get(level, default_level)
+        normalized_level_name = level_aliases.get(str(level), default_level)
         normalized_level_number = level_numbers.get(normalized_level_name)
 
         return {**event_dict, 'level': normalized_level_name, 'levelno': normalized_level_number}
 
 
 # Normalize the name/logger attribute
-def logger_name_processor(logger, method_name: str, event_dict: EventDict) -> EventDict:
+def logger_name_processor(logger: object, method_name: Optional[str], event_dict: EventDict) -> EventDict:
     name = event_dict.pop('name', None)
     if name:
         event_dict['logger'] = name
@@ -116,7 +117,7 @@ def logger_name_processor(logger, method_name: str, event_dict: EventDict) -> Ev
 
 
 # Initialize the logging system
-def init(level: int = None, processors: Optional[List[Processor]] = None):  # pragma: no cover
+def init(level: Optional[int] = None, processors: Optional[List[Processor]] = None):  # pragma: no cover
     if not level:
         level = get_level()
 
@@ -138,18 +139,19 @@ def configure_structured_logging(level: int, processors: Optional[List[Processor
         structlog.configure(processors=final_processors)
 
 
-def get_final_processors(level: int, processors: Optional[List[Processor]] = None):
+def get_final_processors(level: int, processors: Optional[Sequence[Processor]] = None) -> List[Processor]:
 
     if not processors:
         processors = []
 
     # Some sensible defaults
-    final_processors = [
+    final_processors: List[Processor] = [
         structlog.contextvars.merge_contextvars,
         logger_name_processor,
         LogLevelProcessor(level),
         *processors,
-        structlog.processors.StackInfoRenderer(),
+        # Partially defined type...
+        cast(Processor, structlog.processors.StackInfoRenderer()),
         structlog.dev.set_exc_info,
         structlog.processors.format_exc_info,
         structlog.processors.ExceptionPrettyPrinter(),

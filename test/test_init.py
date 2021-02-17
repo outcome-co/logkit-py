@@ -7,6 +7,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 import structlog
 from outcome.logkit import init, stackdriver
+from outcome.logkit.types import EventDict
 
 mock_logger = Mock()
 
@@ -23,7 +24,7 @@ def reload_structlog():
 
 
 @patch('outcome.logkit.init.env.is_prod', return_value=False)
-def test_get_level_not_prod(mocked_is_prod):
+def test_get_level_not_prod(mocked_is_prod: Mock):
     assert init.get_level() == logging.DEBUG
 
 
@@ -33,12 +34,12 @@ def test_get_level_from_env():
 
 
 @patch('outcome.logkit.init.env.is_prod', return_value=True)
-def test_get_level_prod(mocked_is_prod):
+def test_get_level_prod(mocked_is_prod: Mock):
     assert init.get_level() == logging.INFO
 
 
 def test_logger_name_processor():
-    event_dict = {'name': 'logger_name'}
+    event_dict: EventDict = {'name': 'logger_name'}
     out = init.logger_name_processor(logger=None, method_name=None, event_dict=event_dict)
     assert 'name' not in out
     assert out['logger'] == 'logger_name'
@@ -50,7 +51,7 @@ def test_logger_no_name_processor():
     assert out == event_dict
 
 
-def test_configure_structured_logging(*args):
+def test_configure_structured_logging():
     init.configure_structured_logging(logging.INFO)
 
     renderer = structlog.get_config()['processors'][-1]
@@ -59,17 +60,18 @@ def test_configure_structured_logging(*args):
 
 
 @patch('outcome.logkit.init.env.is_prod', return_value=True)
-def test_configure_structured_logging_prod(*args):
+def test_configure_structured_logging_prod(mocked_is_prod: Mock):
     init.configure_structured_logging(logging.INFO)
 
     with warnings.catch_warnings(record=True) as w:
         init.configure_structured_logging(logging.INFO)
+        assert w is not None
         assert len(w) == 1
         assert issubclass(w[0].category, RuntimeWarning)
 
 
 @patch('outcome.logkit.init.env.is_google_cloud', return_value=True)
-def test_configure_structured_logging_gcp(*args):
+def test_configure_structured_logging_gcp(mocked_is_google_cloud: Mock):
     init.configure_structured_logging(logging.INFO)
 
     renderer = structlog.get_config()['processors'][-1]
@@ -77,8 +79,8 @@ def test_configure_structured_logging_gcp(*args):
     assert isinstance(renderer, stackdriver.StackdriverRenderer)
 
 
-def test_configure_structured_logging_custom_processors(*args):
-    def custom_processor():
+def test_configure_structured_logging_custom_processors():
+    def custom_processor(logger: object, method: str, event_dict: EventDict) -> EventDict:
         ...
 
     init.configure_structured_logging(logging.INFO, processors=[custom_processor])
@@ -147,7 +149,7 @@ class TestLogLevelProcessor:  # noqa: WPS214
         processor = init.LogLevelProcessor(logging.INFO)
         event_dict = {'levelno': logging.INFO, 'level': 'info'}
 
-        out = processor.normalize_level(method_name=None, event_dict=event_dict.copy())
+        out = processor.normalize_level(method_name='name', event_dict=event_dict.copy())
 
         assert event_dict == out
 
@@ -171,7 +173,7 @@ class TestLogLevelProcessor:  # noqa: WPS214
         processor = init.LogLevelProcessor(logging.INFO)
         event_dict = {'levelno': logging.FATAL}
 
-        out = processor.normalize_level(method_name=None, event_dict=event_dict.copy())
+        out = processor.normalize_level(method_name='name', event_dict=event_dict.copy())
 
         assert out == {'level': 'fatal', 'levelno': logging.FATAL}
 
@@ -179,6 +181,6 @@ class TestLogLevelProcessor:  # noqa: WPS214
         processor = init.LogLevelProcessor(logging.INFO)
         event_dict = {'level': 'fatal'}
 
-        out = processor.normalize_level(method_name=None, event_dict=event_dict.copy())
+        out = processor.normalize_level(method_name='name', event_dict=event_dict.copy())
 
         assert out == {'level': 'fatal', 'levelno': logging.FATAL}

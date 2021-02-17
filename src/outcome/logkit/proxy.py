@@ -1,19 +1,21 @@
 """Logging proxy. Logs calls to attributes and methods."""
 
 import logging
-from typing import Any
+from typing import Optional
 
 from outcome.logkit.logger import get_logger
 
 
 class LoggingProxy:
-    def __init__(self, target, level=logging.DEBUG, name=None):
+    def __init__(self, target: object, level: int = logging.DEBUG, name: Optional[str] = None):
         self._target = target
         self._logger = get_logger(name)
         self._name = name
         self._level = level
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        assert callable(self._target)
+        rv: object = None
         try:  # noqa: WPS501
             rv = self._target(*args, **kwargs)
         finally:
@@ -23,7 +25,7 @@ class LoggingProxy:
 
         return rv
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
         attr = getattr(self._target, name)
 
         if callable(attr):

@@ -6,11 +6,11 @@ from structlog.contextvars import bind_contextvars, clear_contextvars, unbind_co
 # This is handled for you when you use `init()`
 
 
-def add(**kwargs):
+def add(**kwargs: object):
     bind_contextvars(**kwargs)
 
 
-def remove(*args):
+def remove(*args: str):
     unbind_contextvars(*args)
 
 
