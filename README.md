@@ -1,5 +1,5 @@
 # logkit-py
-![ci-badge](https://github.com/outcome-co/logkit-py/workflows/Release/badge.svg?branch=v1.0.2) ![version-badge](https://img.shields.io/badge/version-1.0.2-brightgreen)
+![Continuous Integration](https://github.com/outcome-co/logkit-py/workflows/Continuous%20Integration/badge.svg) ![version-badge](https://img.shields.io/badge/version-1.0.2-brightgreen)
 
 Logging helpers.
 
@@ -113,4 +113,4 @@ def test_log_output(log_ouput):
 
 ## Development
 
-Remember to run `./pre-commit.sh` when you clone the repository.
+Remember to run `./bootstrap.sh` when you clone the repository.
