@@ -5,7 +5,7 @@ from outcome.logkit.filters import ExcludeFilter
 
 
 class MockHandler(logging.Handler):
-    def __init__(self, mock: Mock, level=logging.NOTSET):
+    def __init__(self, mock: Mock, level: int = logging.NOTSET):
         super().__init__(level)
         self.mock = mock
 

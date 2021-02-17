@@ -2,12 +2,12 @@
 
 import logging
 import os
-from typing import List, Optional, cast, Sequence
+from typing import List, Optional, Sequence, cast
 
 import structlog
 from outcome.logkit import intercept
-from outcome.logkit.types import EventDict, Processor
 from outcome.logkit.stackdriver import StackdriverRenderer
+from outcome.logkit.types import EventDict, Processor
 from outcome.utils import env
 
 _os_key = 'LOGKIT_LOG_LEVEL'
@@ -60,7 +60,6 @@ level_aliases = {
 }
 
 
-
 class LogLevelProcessor:
     """This processor class ensures that each log message has a standardized log level.
 
@@ -110,7 +109,7 @@ class LogLevelProcessor:
 
 
 # Normalize the name/logger attribute
-def logger_name_processor(logger: object, method_name: str, event_dict: EventDict) -> EventDict:
+def logger_name_processor(logger: object, method_name: Optional[str], event_dict: EventDict) -> EventDict:
     name = event_dict.pop('name', None)
     if name:
         event_dict['logger'] = name
@@ -140,9 +139,6 @@ def configure_structured_logging(level: int, processors: Optional[List[Processor
         structlog.configure(processors=final_processors)
 
 
-
-
-
 def get_final_processors(level: int, processors: Optional[Sequence[Processor]] = None) -> List[Processor]:
 
     if not processors:
@@ -154,13 +150,11 @@ def get_final_processors(level: int, processors: Optional[Sequence[Processor]] =
         logger_name_processor,
         LogLevelProcessor(level),
         *processors,
-
         # Partially defined type...
         cast(Processor, structlog.processors.StackInfoRenderer()),
-
         structlog.dev.set_exc_info,
         structlog.processors.format_exc_info,
-        structlog.processors.ExceptionPrettyPrinter()
+        structlog.processors.ExceptionPrettyPrinter(),
     ]
 
     # How is the output formatted

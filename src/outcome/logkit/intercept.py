@@ -2,15 +2,12 @@
 
 import inspect
 import logging
-from collections.abc import Sequence
 from contextlib import contextmanager
-from typing import Dict, Generic, List, Optional, Sequence, TypeVar, Protocol, cast, Union, MutableSequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, MutableSequence, Optional, Protocol, Sequence, Union, cast  # noqa: WPS235
 
 import structlog
 from outcome.logkit.logger import get_logger
 from outcome.utils import env
-
-H = TypeVar('H', bound=logging.Handler)
 
 if TYPE_CHECKING:  # pragma: no cover
     ArgsType = logging._ArgsType  # type: ignore
@@ -19,14 +16,16 @@ else:
     ArgsType = object
     ExcInfoType = object
 
+
 class SupportsIndex(Protocol):  # pragma: no cover
-    def __index__(self) -> int: ...
+    def __index__(self) -> int:
+        ...
 
 
-class HandlerList(MutableSequence[H], Generic[H]):  # noqa: WPS214
+class HandlerList(MutableSequence[logging.Handler]):  # noqa: WPS214
     __slots__ = ('_items', '_restricted')  # noqa: WPS607
 
-    def __init__(self, items: Optional[List[H]] = None) -> None:
+    def __init__(self, items: Optional[List[logging.Handler]] = None) -> None:
         self._items = items or []
         self._restricted = False
 
@@ -39,14 +38,14 @@ class HandlerList(MutableSequence[H], Generic[H]):  # noqa: WPS214
     def __len__(self) -> int:
         return self._items.__len__()  # noqa: WPS609
 
-    def __getitem__(self, s: slice) -> Sequence[H]:
+    def __getitem__(self, s: SupportsIndex):
         return self._items.__getitem__(s)  # noqa: WPS609
 
-    def insert(self, index: int, value: H) -> None:
+    def insert(self, index: int, value: logging.Handler) -> None:
         self._modification_guard(value)
         self._items.insert(index, value)
 
-    def __setitem__(self, s: SupportsIndex, v: H) -> None:
+    def __setitem__(self, s: SupportsIndex, v: logging.Handler) -> None:
         self._modification_guard(v)
         self._items.__setitem__(s, v)  # noqa: WPS609
 
@@ -55,7 +54,7 @@ class HandlerList(MutableSequence[H], Generic[H]):  # noqa: WPS214
         self._modification_guard(v)
         self._items.__delitem__(i)  # noqa: WPS609
 
-    def _modification_guard(self, value: H) -> None:
+    def _modification_guard(self, value: logging.Handler) -> None:
         if not self._restricted:
             return
 
@@ -108,7 +107,17 @@ class InterceptLogger(logging.Logger):
         # No-op
         ...
 
-    def _log(self, level: int, msg: str, args: ArgsType, exc_info: ExcInfoType = None, extra: Optional[Dict[str, object] ]= None, stack_info: bool = False, stacklevel: int = 1, **kwargs: object):  # noqa: WPS211
+    def _log(  # noqa: WPS211
+        self,
+        level: int,
+        msg: str,
+        args: ArgsType,
+        exc_info: ExcInfoType = None,
+        extra: Optional[Dict[str, object]] = None,
+        stack_info: bool = False,
+        stacklevel: int = 1,
+        **kwargs: object,
+    ):
         # The built-in logger library actually has support for arbitrary fields, they're just
         # passed around the the `extra` parameter. We'll mark them so they're easy to find later
 
@@ -162,8 +171,8 @@ def reset_standard_library_logging(level: int):
 
 # There's no stub for manager
 class Manager(Protocol):
-    loggerDict: Dict[str, Union[logging.Logger, logging.PlaceHolder]]
-    
+    loggerDict: Dict[str, Union[logging.Logger, logging.PlaceHolder]]  # noqa: WPS115
+
 
 def intercept_existing_loggers():
     # All existing loggers (at least those retrieved via `getLogger`)

@@ -12,13 +12,12 @@ Example:
 
 """
 import logging
+from typing import Sequence
 
 import pytest
 import structlog
 from outcome.logkit.init import get_final_processors
 from structlog.testing import LogCapture
-
-from typing import Sequence
 
 
 @pytest.fixture

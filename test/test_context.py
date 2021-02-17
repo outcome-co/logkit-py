@@ -16,7 +16,7 @@ def mock_logger_factory():
 def reload_structlog():
     reload(structlog)
     structlog.reset_defaults()
-    structlog.configure(processors=[structlog.contextvars.merge_contextvars], logger_factory=mock_logger_factory)
+    structlog.configure(processors=[structlog.contextvars.merge_contextvars], logger_factory=mock_logger_factory)  # type: ignore
 
 
 def test_context():

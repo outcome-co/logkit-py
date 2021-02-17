@@ -3,9 +3,8 @@
 from datetime import datetime
 from typing import cast
 
-from outcome.logkit.types import EventDict
-
 import structlog
+from outcome.logkit.types import EventDict
 
 
 class StackdriverRenderer(structlog.processors.JSONRenderer):

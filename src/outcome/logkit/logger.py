@@ -1,8 +1,9 @@
 """Interface to structlog."""
 
+from typing import Optional
+
 import structlog
 from outcome.utils import env
-from typing import Optional
 
 
 def get_logger(name: Optional[str] = None, *args: object, **kwargs: object):

@@ -1,5 +1,6 @@
 import logging
 from importlib import reload
+from typing import List, cast
 from unittest.mock import Mock
 
 import pytest
@@ -29,25 +30,26 @@ def test_record_to_dict():
 
 def test_record_to_dict_with_exc():
     name = 'logger'
-    record = logging.LogRecord(name, logging.DEBUG, __name__, 0, 'message', (), 'exc')
+    exc = (Exception, Exception(), None)
+    record = logging.LogRecord(name, logging.DEBUG, __name__, 0, 'message', (), exc)
     event = intercept.record_to_dict(record)
-    assert event['exc_info'] == 'exc'
+    assert event['exc_info'] == exc
 
 
 class MockHandler:
-    def __init__(self, buffer):
+    def __init__(self, buffer: List[logging.LogRecord]):
         self.buffer = buffer
         self.level = 0
         self.flushed = False
         self.closed = False
 
-    def handle(self, record):
+    def handle(self, record: logging.LogRecord):
         self.buffer.append(record)
 
-    def flush(self, *args, **kwargs):
+    def flush(self, *args: object, **kwargs: object):
         self.flushed = True
 
-    def close(self, *args, **kwargs):
+    def close(self, *args: object, **kwargs: object):
         self.closed = True
 
 
@@ -69,7 +71,7 @@ class TestInterceptLogger:
     def test_handlers(self):
         logger = intercept.InterceptLogger('test')
         assert not bool(logger.handlers)
-        logger.addHandler(True)
+        logger.addHandler(Mock())
         assert not bool(logger.handlers)
 
     def test_extras(self):
@@ -82,7 +84,7 @@ class TestInterceptLogger:
         assert isinstance(logger, intercept.InterceptLogger)
 
         mock_logger = MockLogger()
-        logger.parent = mock_logger
+        logger.parent = cast(logging.Logger, mock_logger)
 
         logger.info('hello', user_id=1, tenant_id=1)
 
@@ -99,7 +101,7 @@ class TestInterceptLogger:
         assert isinstance(logger, intercept.InterceptLogger)
 
         mock_logger = MockLogger()
-        logger.parent = mock_logger
+        logger.parent = cast(logging.Logger, mock_logger)
 
         logger.info('hello')
 
@@ -112,7 +114,7 @@ def test_structlog_handler():
     # This class has to be defined in the test, to ensure the `logging` module
     # hasn't been reloaded since it was defined
     class InterceptLoggerWithStructHandler(intercept.InterceptLogger):
-        def __init__(self, name, level=logging.NOTSET) -> None:
+        def __init__(self, name: str, level: int = logging.NOTSET) -> None:
             super().__init__(name, level)
             self.mock_struct_logger = Mock()
             self.handler = intercept.StructlogHandler(self.mock_struct_logger)
@@ -122,11 +124,11 @@ def test_structlog_handler():
             return [self.handler]
 
         @handlers.setter
-        def handlers(self, v):
+        def handlers(self, v: List[object]):
             ...
 
     logging.setLoggerClass(InterceptLoggerWithStructHandler)
-    logger = logging.getLogger('test_structlog_handler')
+    logger = cast(InterceptLoggerWithStructHandler, logging.getLogger('test_structlog_handler'))
     logging.setLoggerClass(logging.Logger)
 
     logger.setLevel(logging.DEBUG)
@@ -174,7 +176,7 @@ def test_intercepted_logging():  # noqa: WPS218,WPS231
 
         handler = MockHandler([])
         some_logger.propagate = False
-        some_logger.handlers = [handler]
+        some_logger.handlers = [cast(logging.Handler, handler)]
 
         other_logger = None
 
@@ -209,21 +211,27 @@ def test_intercepted_logging():  # noqa: WPS218,WPS231
 
 class TestHandlerList:
     def test_interface(self):  # noqa: WPS218
-        hl = intercept.HandlerList([1])
+        m = Mock()
+        hl = intercept.HandlerList([m])
 
+        # Check that it contains the initial handler
         assert len(hl) == 1
-        assert hl[0] == 1
+        assert hl[0] == m
 
-        hl.append(2)
-        hl[1] = 3
+        # Check that we can overwrite a handler
+        m2 = Mock()
+        m3 = Mock()
+
+        hl.append(m2)
+        hl[1] = m3
 
         assert len(hl) == 2
-        assert hl[1] == 3
+        assert hl[1] == m3
 
         del hl[1]
 
         assert len(hl) == 1
-        assert hl[0] == 1
+        assert hl[0] == m
 
     def test_restricted(self):
         import _pytest  # noqa: WPS433,WPS436
@@ -239,15 +247,15 @@ class TestHandlerList:
             handler = intercept.BufferHandler()
             hl[0] = handler
 
-        hl.append(_pytest.logging._LiveLoggingNullHandler())
+        hl.append(_pytest.logging._LiveLoggingNullHandler())  # type: ignore
 
     def test_relax(self):
         hl = intercept.HandlerList()
         hl.restrict()
 
         with pytest.raises(RuntimeError):
-            hl.append(1)
+            hl.append(Mock())
 
         hl.relax()
 
-        hl.append(1)
+        hl.append(Mock())
