@@ -20,7 +20,13 @@ class LoggingProxy:
             rv = self._target(*args, **kwargs)
         finally:
             self._logger.log(
-                self._name, type='method', args=args, kwargs=kwargs, retval=rv, levelno=self._level, logger=self._name,
+                self._name or 'unknown',
+                type='method',
+                args=args,
+                kwargs=kwargs,
+                retval=rv,
+                levelno=self._level,
+                logger=self._name,
             )
 
         return rv

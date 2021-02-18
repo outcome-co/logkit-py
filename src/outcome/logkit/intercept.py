@@ -5,8 +5,8 @@ import logging
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Dict, List, MutableSequence, Optional, Protocol, Sequence, Union, cast  # noqa: WPS235
 
-import structlog
 from outcome.logkit.logger import get_logger
+from outcome.logkit.types import StructLogger
 from outcome.utils import env
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -133,7 +133,7 @@ class InterceptLogger(logging.Logger):
 # This is the bridge between the two logging systems - messages are
 # handled by being forwarded to the struct logger
 class StructlogHandler(logging.Handler):
-    def __init__(self, struct_logger: structlog.BoundLogger, level: int = logging.NOTSET):
+    def __init__(self, struct_logger: StructLogger, level: int = logging.NOTSET):
         super().__init__(level)
         self.struct_logger = struct_logger
 
