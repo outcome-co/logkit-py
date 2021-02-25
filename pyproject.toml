@@ -14,10 +14,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8.6"
 structlog = "^20.1.0"
-outcome-utils = "^5.0.0"
+outcome-utils = "^5.0.3"
 
 [tool.poetry.dev-dependencies]
-outcome-devkit = "^5.6.1"
+outcome-devkit = "^6.0.2"
 freezegun = "^1.0.0"
 
 

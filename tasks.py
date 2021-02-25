@@ -1,5 +1,6 @@
 """Invoke tasks."""
 
+from invoke import Collection
 from outcome.devkit.invoke import tasks
 
-namespace = tasks.namespace
+namespace: Collection = tasks.namespace

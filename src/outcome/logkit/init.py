@@ -109,10 +109,9 @@ class LogLevelProcessor:
 
 
 # Normalize the name/logger attribute
-def logger_name_processor(logger: object, method_name: Optional[str], event_dict: EventDict) -> EventDict:
-    name = event_dict.pop('name', None)
-    if name:
-        event_dict['logger'] = name
+def logger_name_processor(logger: object, name: str, event_dict: EventDict) -> EventDict:
+    name = event_dict.pop('name', name)
+    event_dict['logger'] = name
     return event_dict
 
 
@@ -148,13 +147,13 @@ def get_final_processors(level: int, processors: Optional[Sequence[Processor]] =
     final_processors: List[Processor] = [
         structlog.contextvars.merge_contextvars,
         logger_name_processor,
-        LogLevelProcessor(level),
+        cast(Processor, LogLevelProcessor(level)),
         *processors,
         # Partially defined type...
-        cast(Processor, structlog.processors.StackInfoRenderer()),
-        structlog.dev.set_exc_info,
-        structlog.processors.format_exc_info,
-        structlog.processors.ExceptionPrettyPrinter(),
+        structlog.processors.StackInfoRenderer(),
+        cast(Processor, structlog.dev.set_exc_info),
+        cast(Processor, structlog.processors.format_exc_info),
+        cast(Processor, structlog.processors.ExceptionPrettyPrinter()),
     ]
 
     # How is the output formatted
@@ -164,7 +163,8 @@ def get_final_processors(level: int, processors: Optional[Sequence[Processor]] =
         final_processors.append(StackdriverRenderer())
     else:
         final_processors.append(structlog.processors.TimeStamper(fmt='iso'))
-        final_processors.append(structlog.stdlib.PositionalArgumentsFormatter())
+        # param name mismatch
+        final_processors.append(cast(Processor, structlog.stdlib.PositionalArgumentsFormatter()))
         # The renderer needs to be the last processor
         final_processors.append(structlog.dev.ConsoleRenderer())
 
