@@ -1,13 +1,15 @@
 """Logkit types."""
 
-from typing import Any, MutableMapping, Protocol, TypeVar, Union
+from typing import Any, Mapping, Protocol, TypeVar, Union
+
+from structlog.types import EventDict
 
 # We have to use Any, as MutableMapping is invariant
-EventDict = MutableMapping[str, Any]
+ImmutuableEventDict = Mapping[str, Any]
 
 
 class Processor(Protocol):  # pragma: no cover
-    def __call__(self, logger: object, method_name: str, event_dict: EventDict) -> Union[EventDict, str, bytes]:
+    def __call__(self, logger: object, name: str, event_dict: EventDict) -> Union[EventDict, str, bytes]:
         ...
 
 

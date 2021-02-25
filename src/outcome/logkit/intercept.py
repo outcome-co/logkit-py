@@ -171,7 +171,7 @@ def reset_standard_library_logging(level: int):
 
 # There's no stub for manager
 class Manager(Protocol):
-    loggerDict: Dict[str, Union[logging.Logger, logging.PlaceHolder]]  # noqa: WPS115
+    loggerDict: Dict[str, Union[logging.Logger, logging.PlaceHolder]]  # noqa: WPS115,N815
 
 
 def intercept_existing_loggers():
