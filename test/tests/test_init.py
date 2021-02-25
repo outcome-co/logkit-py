@@ -40,14 +40,14 @@ def test_get_level_prod(mocked_is_prod: Mock):
 
 def test_logger_name_processor():
     event_dict: EventDict = {'name': 'logger_name'}
-    out = init.logger_name_processor(logger=None, method_name=None, event_dict=event_dict)
+    out = init.logger_name_processor(logger=None, name='', event_dict=event_dict)
     assert 'name' not in out
     assert out['logger'] == 'logger_name'
 
 
 def test_logger_no_name_processor():
     event_dict = {'no_name': 'logger_name'}
-    out = init.logger_name_processor(logger=None, method_name=None, event_dict=event_dict)
+    out = init.logger_name_processor(logger=None, name='', event_dict=event_dict)
     assert out == event_dict
 
 
@@ -80,7 +80,7 @@ def test_configure_structured_logging_gcp(mocked_is_google_cloud: Mock):
 
 
 def test_configure_structured_logging_custom_processors():
-    def custom_processor(logger: object, method: str, event_dict: EventDict) -> EventDict:
+    def custom_processor(logger: object, name: str, event_dict: EventDict) -> EventDict:
         ...
 
     init.configure_structured_logging(logging.INFO, processors=[custom_processor])
