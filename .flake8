@@ -4,6 +4,7 @@ max-complexity = 18
 count = True
 exclude = .git, dist, .cache, __pycache__
 docstring-convention = google
+color = always
 
 format = ${cyan}%(path)s${reset}:${yellow_bold}%(row)d${reset}:${green_bold}%(col)d${reset}: ${red_bold}%(code)s${reset} %(text)s
 
@@ -38,6 +39,9 @@ ignore = W503, # Allow line break before binary operator
          WPS437, # Allow usage of protected attribute : _state
          WPS604, # Allow usage of `pass` or `global var` inside classes
          S101, # Allow assert
+         WPS402, # Noqa overuse
+         WPS235, # Too many imports
+         WPS403, # Noqa overuse
 
 per-file-ignores = test/**.py: WPS442, WPS226, WPS219, S101, D100, WPS211, WPS609, WPS118
                    src/outcome/logkit/fixtures/**.py: WPS442

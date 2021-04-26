@@ -1,11 +1,11 @@
 import logging
 from importlib import reload
-from typing import List, cast
+from typing import List, Sequence, cast
 from unittest.mock import Mock
 
 import pytest
 import structlog
-from outcome.logkit import intercept
+from outcome.logkit import intercept, types
 
 
 @pytest.fixture(autouse=True)
@@ -55,7 +55,7 @@ class MockHandler:
 
 class MockLogger:
     def __init__(self) -> None:
-        self.records = []
+        self.records: List[logging.LogRecord] = []
         self.handlers = [MockHandler(self.records)]
         self.propagate = False
         self.level = 0
@@ -89,7 +89,11 @@ class TestInterceptLogger:
         logger.info('hello', user_id=1, tenant_id=1)
 
         assert len(mock_logger.records) == 1
-        assert mock_logger.records[0].bindings == {'user_id': 1, 'tenant_id': 1}
+
+        # They do actually exist..
+        bindings = mock_logger.records[0].bindings  # type: ignore
+
+        assert bindings == {'user_id': 1, 'tenant_id': 1}
 
     def test_no_extras(self):
         logging.setLoggerClass(intercept.InterceptLogger)
@@ -106,7 +110,11 @@ class TestInterceptLogger:
         logger.info('hello')
 
         assert len(mock_logger.records) == 1
-        assert not bool(mock_logger.records[0].bindings)
+
+        # They do actually exist...
+        bindings: types.EventDict = mock_logger.records[0].bindings  # type: ignore
+
+        assert not bool(bindings)
 
 
 def test_structlog_handler():
@@ -124,7 +132,7 @@ def test_structlog_handler():
             return [self.handler]
 
         @handlers.setter
-        def handlers(self, v: List[object]):
+        def handlers(self, v: Sequence[logging.Handler]):
             ...
 
     logging.setLoggerClass(InterceptLoggerWithStructHandler)
@@ -227,11 +235,18 @@ class TestHandlerList:
 
         assert len(hl) == 2
         assert hl[1] == m3
+        assert hl[0:2] == [m, m3]  # noqa: WPS349
 
         del hl[1]
 
         assert len(hl) == 1
         assert hl[0] == m
+
+        hl[0:2] = [m3, m]  # noqa: WPS349,WPS362
+        assert hl[0:2] == [m3, m]  # noqa: WPS349
+
+        del hl[0:2]  # noqa: WPS349
+        assert len(hl) == 0  # noqa: WPS507
 
     def test_restricted(self):
         import _pytest  # noqa: WPS433,WPS436
