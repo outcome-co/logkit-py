@@ -3,7 +3,7 @@
 import inspect
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Dict, List, MutableSequence, Optional, Protocol, Sequence, Union, cast  # noqa: WPS235
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, MutableSequence, Optional, Protocol, Sequence, Union, cast, overload
 
 from outcome.logkit.logger import get_logger
 from outcome.logkit.types import StructLogger
@@ -38,20 +38,51 @@ class HandlerList(MutableSequence[logging.Handler]):  # noqa: WPS214
     def __len__(self) -> int:
         return self._items.__len__()  # noqa: WPS609
 
-    def __getitem__(self, s: SupportsIndex):
+    @overload
+    def __getitem__(self, s: int) -> logging.Handler:  # pragma: no cover
+        ...
+
+    @overload
+    def __getitem__(self, s: slice) -> MutableSequence[logging.Handler]:  # pragma: no cover
+        ...
+
+    # A bit of a hacky type override
+    def __getitem__(self, s: Union[int, slice]) -> Any:
+        if isinstance(s, int):
+            return self._items.__getitem__(s)  # noqa: WPS609
         return self._items.__getitem__(s)  # noqa: WPS609
 
     def insert(self, index: int, value: logging.Handler) -> None:
         self._modification_guard(value)
         self._items.insert(index, value)
 
-    def __setitem__(self, s: SupportsIndex, v: logging.Handler) -> None:
-        self._modification_guard(v)
-        self._items.__setitem__(s, v)  # noqa: WPS609
+    @overload
+    def __setitem__(self, s: int, v: logging.Handler) -> None:  # pragma: no cover
+        ...
 
-    def __delitem__(self, i: int) -> None:  # noqa: WPS603
-        v = self._items[i]
-        self._modification_guard(v)
+    @overload
+    def __setitem__(self, s: slice, v: Iterable[logging.Handler]) -> None:  # pragma: no cover
+        ...
+
+    def __setitem__(self, s: Union[int, slice], v: Union[logging.Handler, Iterable[logging.Handler]]) -> None:
+        if isinstance(s, int) and not isinstance(v, Iterable):
+            self._modification_guard(v)
+            self._items.__setitem__(s, v)  # noqa: WPS609
+        elif isinstance(s, slice) and isinstance(v, Iterable):
+            for h in v:
+                self._modification_guard(h)
+            self._items.__setitem__(s, v)  # noqa: WPS609
+        else:  # pragma: no cover
+            raise ValueError
+
+    def __delitem__(self, i: Union[int, slice]) -> None:  # noqa: WPS603
+        if isinstance(i, int):
+            v = self._items[i]
+            self._modification_guard(v)
+        else:
+            v = self._items[i]
+            for h in v:
+                self._modification_guard(h)
         self._items.__delitem__(i)  # noqa: WPS609
 
     def _modification_guard(self, value: logging.Handler) -> None:
@@ -99,11 +130,11 @@ class InterceptLogger(logging.Logger):
         ...
 
     @property
-    def handlers(self):
-        return []
+    def handlers(self) -> Sequence[logging.Handler]:
+        return cast(HandlerList, [])
 
     @handlers.setter  # type: ignore
-    def handlers(self, v: List[object]):
+    def handlers(self, v: Sequence[logging.Handler]):
         # No-op
         ...
 

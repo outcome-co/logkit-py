@@ -155,7 +155,7 @@ class TestLogLevelProcessor:  # noqa: WPS214
 
     def test_normalized_level_no_info_standard_method(self):
         processor = init.LogLevelProcessor(logging.INFO)
-        event_dict = {}
+        event_dict: EventDict = {}
 
         out = processor.normalize_level(method_name='info', event_dict=event_dict.copy())
 
@@ -163,7 +163,7 @@ class TestLogLevelProcessor:  # noqa: WPS214
 
     def test_normalized_level_no_info_abnormal_method(self):
         processor = init.LogLevelProcessor(logging.INFO)
-        event_dict = {}
+        event_dict: EventDict = {}
 
         out = processor.normalize_level(method_name='haha', event_dict=event_dict.copy())
 

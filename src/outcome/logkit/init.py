@@ -8,7 +8,7 @@ import structlog
 from outcome.logkit import intercept
 from outcome.logkit.stackdriver import StackdriverRenderer
 from outcome.logkit.types import EventDict, Processor
-from outcome.utils import env
+from outcome.utils import env, feature_set
 
 _os_key = 'LOGKIT_LOG_LEVEL'
 
@@ -156,8 +156,10 @@ def get_final_processors(level: int, processors: Optional[Sequence[Processor]] =
         cast(Processor, structlog.processors.ExceptionPrettyPrinter()),
     ]
 
+    use_stackdriver = feature_set.value('co.outcome.logkit.use_stackdriver')
+
     # How is the output formatted
-    if env.is_google_cloud():
+    if (use_stackdriver == 'auto' and env.is_google_cloud()) or use_stackdriver == 'yes':
         final_processors.append(structlog.processors.TimeStamper())
         # The renderer needs to be the last processor
         final_processors.append(StackdriverRenderer())
