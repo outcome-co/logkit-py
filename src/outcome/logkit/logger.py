@@ -3,8 +3,9 @@
 from typing import Optional
 
 import structlog
-from outcome.logkit.types import StructLogger
 from outcome.utils import env
+
+from outcome.logkit.types import StructLogger
 
 
 def get_logger(name: Optional[str] = None, *args: object, **kwargs: object) -> StructLogger:

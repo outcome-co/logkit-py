@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import pytest
 import structlog
 from freezegun import freeze_time
+
 from outcome.logkit.stackdriver import StackdriverRenderer
 
 mock_logger = Mock()

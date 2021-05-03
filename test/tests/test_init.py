@@ -6,6 +6,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 import structlog
+
 from outcome.logkit import init, stackdriver
 from outcome.logkit.types import EventDict
 
