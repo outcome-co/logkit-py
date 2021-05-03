@@ -27,7 +27,11 @@ class TestProxy:
         mocked_get_logger.assert_called_once_with('my_test')
 
         logger.log.assert_called_once_with(
-            'my_test.attribute', type='attribute', retval=attribute_value, levelno=logging.FATAL, logger='my_test.attribute',
+            'my_test.attribute',
+            type='attribute',
+            retval=attribute_value,
+            levelno=logging.FATAL,
+            logger='my_test.attribute',
         )
 
     def test_proxy_callable(self, mocked_get_logger: Mock):

@@ -38,7 +38,11 @@ class LoggingProxy:
             return LoggingProxy(attr, name=f'{self._name}.{name}', level=self._level)
         else:
             self._logger.log(
-                f'{self._name}.{name}', type='attribute', retval=attr, levelno=self._level, logger=f'{self._name}.{name}',
+                f'{self._name}.{name}',
+                type='attribute',
+                retval=attr,
+                levelno=self._level,
+                logger=f'{self._name}.{name}',
             )
 
         return attr

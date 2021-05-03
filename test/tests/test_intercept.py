@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 import structlog
+
 from outcome.logkit import intercept, types
 
 
@@ -144,7 +145,11 @@ def test_structlog_handler():
     logger.info(' hello  ', user_id=1)
 
     logger.mock_struct_logger.info.assert_called_once_with(
-        'hello', levelno=logging.INFO, level='INFO', logger='test_structlog_handler', user_id=1,
+        'hello',
+        levelno=logging.INFO,
+        level='INFO',
+        logger='test_structlog_handler',
+        user_id=1,
     )
 
 

@@ -2,6 +2,7 @@ from importlib import reload
 
 import pytest
 import structlog
+
 from outcome.logkit import get_logger
 
 

@@ -17,7 +17,7 @@ structlog = ">=20.1,<22.0"
 outcome-utils = "^5.0.3"
 
 [tool.poetry.dev-dependencies]
-outcome-devkit = "^6.6.6"
+outcome-devkit = "^7.2.0"
 freezegun = "^1.0.0"
 
 

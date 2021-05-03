@@ -5,9 +5,10 @@ import logging
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, MutableSequence, Optional, Protocol, Sequence, Union, cast, overload
 
+from outcome.utils import env
+
 from outcome.logkit.logger import get_logger
 from outcome.logkit.types import StructLogger
-from outcome.utils import env
 
 if TYPE_CHECKING:  # pragma: no cover
     ArgsType = logging._ArgsType  # type: ignore

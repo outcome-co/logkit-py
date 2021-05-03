@@ -5,10 +5,11 @@ import os
 from typing import List, Optional, Sequence, cast
 
 import structlog
+from outcome.utils import env, feature_set
+
 from outcome.logkit import intercept
 from outcome.logkit.stackdriver import StackdriverRenderer
 from outcome.logkit.types import EventDict, Processor
-from outcome.utils import env, feature_set
 
 _os_key = 'LOGKIT_LOG_LEVEL'
 

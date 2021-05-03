@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 import structlog
+
 from outcome.logkit import context
 
 mock_logger = Mock()
